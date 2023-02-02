@@ -1,7 +1,7 @@
 variable "default_tags" {
   type = map(string)
   default = {
-    "env" = "pla"
+    "env" = "PLA"
   }
   description = "Default naming scheme for Pawnee Library Association"
 }

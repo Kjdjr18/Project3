@@ -47,4 +47,30 @@ resource "aws_subnet" "private" {
   }
   availability_zone = data.aws_availability_zones.availability_zone.names[count.index]
 }
- 
+
+# IGW
+resource "aws_internet_gateway" "main_igw" {
+  vpc_id = aws_vpc.main.id
+  tags = {
+    "Name" = "${var.default_tags.env}-IGW"
+  }
+}
+
+# NGW
+resource "aws_nat_gateway" "main_nat" {
+  count         = 2
+  allocation_id = aws_eip.NAT_EIP[count.index].id
+  subnet_id     = aws_subnet.public[count.index].id
+  tags = {
+    "Name" = "${var.default_tags.env}-NGW-${count.index + 1}"
+  }
+}
+
+# EIP
+resource "aws_eip" "NAT_EIP" {
+  count = 2
+  vpc   = true
+  tags = {
+    "Name" = "${var.default_tags.env}-EIP-${count.index + 1}"
+  }
+}
