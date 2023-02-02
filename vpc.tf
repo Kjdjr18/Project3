@@ -88,10 +88,52 @@ resource "aws_route" "public" {
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.main_igw.id
 }
-
 # public route table association
 resource "aws_route_table_association" "public" {
   count          = var.public_subnet_count
   subnet_id      = element(aws_subnet.public.*.id, count.index)
   route_table_id = aws_route_table.public.id
+}
+# private route table-1
+resource "aws_route_table" "private-1" {
+  vpc_id = aws_vpc.main.id
+  tags = {
+    "Name" = "${var.default_tags.env}-PrivateRT-1"
+  }
+}
+
+# private route table-2
+resource "aws_route_table" "private-2" {
+  vpc_id = aws_vpc.main.id
+  tags = {
+    "Name" = "${var.default_tags.env}-PrivateRT-2"
+  }
+}
+
+# private route-1
+resource "aws_route" "private-1" {
+  route_table_id         = aws_route_table.private-1.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.main_nat[0].id
+}
+
+# private route-2
+resource "aws_route" "private-2" {
+  route_table_id         = aws_route_table.private-2.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.main_nat[1].id
+}
+
+# private route table association
+resource "aws_route_table_association" "private-1" {
+  count          = var.private_subnet_count
+  subnet_id      = aws_subnet.private[0].id
+  route_table_id = aws_route_table.private-1.id
+}
+
+# private route table association
+resource "aws_route_table_association" "private-2" {
+  count          = var.private_subnet_count
+  subnet_id      = aws_subnet.private[1].id
+  route_table_id = aws_route_table.private-2.id
 }
