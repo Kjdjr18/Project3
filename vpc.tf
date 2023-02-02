@@ -74,3 +74,24 @@ resource "aws_eip" "NAT_EIP" {
     "Name" = "${var.default_tags.env}-EIP-${count.index + 1}"
   }
 }
+
+# public route table
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+  tags = {
+    "Name" = "${var.default_tags.env}-PublicRT"
+  }
+}
+# public route
+resource "aws_route" "public" {
+  route_table_id         = aws_route_table.public.id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.main_igw.id
+}
+
+# public route table association
+resource "aws_route_table_association" "public" {
+  count          = var.public_subnet_count
+  subnet_id      = element(aws_subnet.public.*.id, count.index)
+  route_table_id = aws_route_table.public.id
+}
